@@ -19,18 +19,34 @@ function mix (a, b, p) {
 
 var tilePIXI32 = tilePIXI(32);
 
-var heroesTexture = loadTexture("heroes.png");
+// sr2zrs3h
+var heroesTexture = loadTexture("heroes-2.png");
+var heroesTextureGhost = loadTexture("heroes-2.png");
 
 var blastTexture = loadTexture("blast.png");
 
 var orientations = [3, 2, 0, 1]; // N E S W
 
-var heroTextures = [3, 2, 1, 0].map(function (p) {
+//var nbPalyers = 8;
+//var indexPlayers = [3, 2, 1, 0];
+var indexPlayers = Array.apply(null, {length: 8}).map(Number.call, Number);
+var heroTextures = indexPlayers.map(function (p) {
+  if (p > 3) {
+    return orientations.map(function (o) {
+      return tilePIXI32(heroesTextureGhost, o, p);
+    });
+  }
   return orientations.map(function (o) {
     return tilePIXI32(heroesTexture, o, p);
   });
+
 });
-var heroCrownTextures = [3, 2, 1, 0].map(function (p) {
+var heroCrownTextures = indexPlayers.map(function (p) {
+  if (p > 3) {
+    return orientations.map(function (o) {
+      return tilePIXI32(heroesTextureGhost, o+5, p);
+    });
+  }
   return orientations.map(function (o) {
     return tilePIXI32(heroesTexture, o+5, p);
   });
@@ -38,6 +54,10 @@ var heroCrownTextures = [3, 2, 1, 0].map(function (p) {
 
 var blinkTextures = orientations.map(function (o) {
   return tilePIXI32(heroesTexture, o, 4);
+});
+
+var blinkTexturesGhost = orientations.map(function (o) {
+  return tilePIXI32(heroesTextureGhost, o, 4);
 });
 
 /*
@@ -76,7 +96,7 @@ function Hero (id, obj, tileSize, effectsContainer, triggerBloodParticle) {
 
   this.heroTextures = heroTextures;
   this.heroSprite = createHeroSprite(this.heroTextures[id - 1][0]);
-  this.blinkSprite = createHeroSprite(blinkTextures[0]);
+  this.blinkSprite = id < 5 ? createHeroSprite(blinkTextures[0]) : createHeroSprite(blinkTexturesGhost[0]);
   this.blinkSprite.alpha = 0;
 
   this.blastSprite = new PIXI.Sprite(blastTexture);
@@ -110,7 +130,11 @@ Hero.prototype.refreshHeroSprite = function (orientation) {
   this._currentHeroTextures = this.heroesTexture;
   this._currentOrientation = orientation;
   this.heroSprite.setTexture(this.heroTextures[this.id - 1][orientation]);
-  this.blinkSprite.setTexture(blinkTextures[orientation]);
+  if (this.id < 5) {
+    this.blinkSprite.setTexture(blinkTextures[orientation]);
+  } else {
+    this.blinkSprite.setTexture(blinkTexturesGhost[orientation]);
+  }
 };
 
 Hero.prototype.drawLifeIndicator = function (life) {
